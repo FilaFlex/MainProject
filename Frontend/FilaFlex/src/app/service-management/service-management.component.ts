@@ -1,16 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { ServiceTableComponent } from '../service-table/service-table.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-service-management',
+  standalone: true,
+  imports: [ServiceTableComponent, HttpClientModule],
   template: `
     <div class="p-6">
       <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold">Gerenciamento de Filas de Atendimento</h1>
-        <button (click)="handleAddQueue()" class="btn btn-primary">Adicionar Fila</button>
+        <h1 class="text-2xl font-bold">Gerenciamento de Serviços</h1>
+        <button (click)="handleAddService()" class="btn btn-primary">Adicionar Serviço</button>
       </div>
       
-      <app-queue-table [queues]="queues" (editQueue)="handleEditQueue($event)" (deleteQueue)="handleDeleteQueue($event)"></app-queue-table>
+      <app-service-table 
+        [services]="services" 
+        (editService)="handleEditService($event)" 
+        (deleteService)="handleDeleteService($event)">
+      </app-service-table>
     </div>
   `,
   styles: [
@@ -27,43 +35,65 @@ import { HttpClient } from '@angular/common/http';
     `
   ]
 })
-export class ServiceManagementComponent implements OnInit {
-  queues: any[] = [];
-  private apiUrl = 'http://localhost:3000/queues'; // URL da API para testes no Insomnia
+export class ServiceManagementComponent {
+  services: any[] = [];
+
+  private apiUrl = 'http://localhost:3000/services';
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.loadQueues();
+    this.loadServices();
   }
 
-  loadQueues(): void {
+  loadServices(): void {
     this.http.get<any[]>(this.apiUrl).subscribe(
-      (data) => this.queues = data,
-      (error) => console.error('Erro ao carregar filas:', error)
+      (data) => this.services = data,
+      (error) => console.error('Erro ao carregar serviços:', error)
     );
   }
 
-  handleAddQueue(): void {
-    const newQueue = { name: 'Nova Fila', type: 'Outro', priority: 'Média' };
-    this.http.post<any>(this.apiUrl, newQueue).subscribe(
-      (data) => this.queues = [...this.queues, data],
-      (error) => console.error('Erro ao adicionar fila:', error)
+  // Método para adicionar serviço
+  handleAddService(): void {
+    const newService = {
+      name: 'Novo Serviço',
+      description: 'Descrição do serviço',
+      category: 'Categoria',
+      price: 100,
+      executionTime: '1 hora',
+      deliveryDate: '2025-03-20',
+      documentation: 'Nenhuma'
+    };
+
+    this.http.post<any>(this.apiUrl, newService).subscribe(
+      (data) => this.services = [...this.services, data],
+      (error) => console.error('Erro ao adicionar serviço:', error)
     );
   }
 
-  handleEditQueue(id: number): void {
-    const updatedQueue = { name: 'Fila Atualizada', type: 'Outro', priority: 'Alta' };
-    this.http.put<any>(`${this.apiUrl}/${id}`, updatedQueue).subscribe(
-      () => this.loadQueues(),
-      (error) => console.error('Erro ao editar fila:', error)
+  // Método para editar serviço
+  handleEditService(id: number): void {
+    const updatedService = {
+      name: 'Serviço Atualizado',
+      description: 'Nova descrição',
+      category: 'Nova Categoria',
+      price: 200,
+      executionTime: '2 horas',
+      deliveryDate: '2025-03-22',
+      documentation: 'Documento atualizado'
+    };
+
+    this.http.put<any>(`${this.apiUrl}/${id}`, updatedService).subscribe(
+      () => this.loadServices(),
+      (error) => console.error('Erro ao editar serviço:', error)
     );
   }
 
-  handleDeleteQueue(id: number): void {
+  // Método para excluir serviço
+  handleDeleteService(id: number): void {
     this.http.delete(`${this.apiUrl}/${id}`).subscribe(
-      () => this.queues = this.queues.filter(queue => queue.id !== id),
-      (error) => console.error('Erro ao excluir fila:', error)
+      () => this.services = this.services.filter(service => service.id !== id),
+      (error) => console.error('Erro ao excluir serviço:', error)
     );
   }
 }
