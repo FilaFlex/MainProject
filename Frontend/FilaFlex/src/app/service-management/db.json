@@ -1,0 +1,28 @@
+{
+  "services": [
+    {
+      "name": "Novo Serviço",
+      "description": "Descrição do serviço",
+      "category": "Categoria",
+      "price": 100,
+      "executionTime": "1 hora",
+      "deliveryDate": "2025-03-20",
+      "documentation": "Nenhuma",
+      "id": 1
+    }
+  ],
+  "filas": [
+    {
+      "id": 1,
+      "name": "Fila de Atendimento Médico",
+      "type": "Saúde",
+      "priority": "Alta"
+    },
+    {
+      "id": 2,
+      "name": "Fila de Atendimento Bancário",
+      "type": "Financeiro",
+      "priority": "Média"
+    }
+  ]
+}
