@@ -34,7 +34,7 @@ export class AuthService {
     localStorage.removeItem('token');
   }
 
-  async register(newUser: User): Promise<User | null> {
+  async register(newUser: User, email: any, password: any, role: any): Promise<User | null> {
     try {
       newUser.role = newUser.role.toUpperCase();
       const response = await fetch(`${this.apiUrl}/register`, {
