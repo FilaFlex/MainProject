@@ -24,8 +24,8 @@ export interface AppointmentType {
   providedIn: 'root'
 })
 export class AppointmentTypeService {
-  private apiUrl = 'http://localhost:8080/appointment-types';
-  private categoryUrl = 'http://localhost:8080/category';
+  private apiUrl = 'https://filaflex-backend.onrender.com:8080/appointment-types';
+  private categoryUrl = 'https://filaflex-backend.onrender.com:8080/category';
 
   constructor(private http: HttpClient) {}
 
