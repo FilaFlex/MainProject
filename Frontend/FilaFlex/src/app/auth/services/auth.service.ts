@@ -6,7 +6,7 @@ import { jwtDecode } from 'jwt-decode';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://filaflex-backend.onrender.com:8080/auth';
+  private apiUrl = 'https://filaflex-backend.onrender.com/auth';
 
   async login(email: string, password: string): Promise<boolean> {
     try {
