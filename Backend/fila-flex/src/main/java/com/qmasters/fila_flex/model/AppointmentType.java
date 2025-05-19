@@ -44,19 +44,23 @@ public class AppointmentType {
     @OneToMany(mappedBy = "appointmentType", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Evaluation> evaluations = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "service_schedule_id")
-    private ServiceSchedule serviceSchedule;
+    @OneToMany(mappedBy = "appointmentType", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@JsonManagedReference
+    private List<ServiceSchedule> serviceSchedule;
 
     //Construtores
 
-    public AppointmentType() {}
+    public AppointmentType() {
+        this.appointments = new ArrayList<>();
+        this.serviceSchedule = new ArrayList<>();
+    }
     
     public AppointmentType(AppointmentTypeDetails appointmentTypeDetails, Integer estimatedTime, Adress adress) {
         this.appointmentTypeDetails = appointmentTypeDetails;
         this.estimatedTime = estimatedTime;
         this.adress = adress;
         this.appointments = new ArrayList<>();
+        this.serviceSchedule = new ArrayList<>();
     }
     
     //Getters e Setters
@@ -164,11 +168,11 @@ public class AppointmentType {
         return appointmentTypeDetails.getRequiredDocumentation();
     }
 
-    public ServiceSchedule getServiceSchedule() {
+    public List<ServiceSchedule> getServiceSchedule() {
         return serviceSchedule;
     }
 
-    public void setServiceSchedule(ServiceSchedule serviceSchedule) {
+    public void setServiceSchedule(List<ServiceSchedule> serviceSchedule) {
         this.serviceSchedule = serviceSchedule;
     }
 }

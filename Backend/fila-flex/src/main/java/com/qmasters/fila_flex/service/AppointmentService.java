@@ -7,8 +7,12 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import com.qmasters.fila_flex.exception.InvalidDayException;
+import com.qmasters.fila_flex.model.AppointmentType;
 import com.qmasters.fila_flex.model.ServiceSchedule;
+import com.qmasters.fila_flex.model.User;
+import com.qmasters.fila_flex.repository.AppointmentTypeRepository;
 import com.qmasters.fila_flex.repository.ServiceScheduleRepository;
+import com.qmasters.fila_flex.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import com.qmasters.fila_flex.dto.AppointmentDTO;
@@ -24,40 +28,54 @@ import jakarta.transaction.Transactional;
 public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
 
+    private final AppointmentTypeRepository appointmentTypeRepository;
+
+    private final UserRepository userRepository;
+
     private final ServiceScheduleService serviceScheduleService;
 
     private final QueueService queueService;
 
-    public AppointmentService(
-            AppointmentRepository appointmentRepository,
-            ServiceScheduleService serviceScheduleService,
-            QueueService queueService)
-    {
+    public AppointmentService(AppointmentRepository appointmentRepository,
+                              AppointmentTypeRepository appointmentTypeRepository,
+                              UserRepository userRepository,
+                              ServiceScheduleService serviceScheduleService,
+                              QueueService queueService) {
         this.appointmentRepository = appointmentRepository;
+        this.appointmentTypeRepository = appointmentTypeRepository;
+        this.userRepository = userRepository;
         this.serviceScheduleService = serviceScheduleService;
         this.queueService = queueService;
     }
 
     @Transactional
-    public Appointment saveAppointment(AppointmentDTO appointmentDTO) {
-        Appointment appointment = new Appointment(
-            appointmentDTO.getAppointmentType(), 
-            appointmentDTO.getUser(), 
-            appointmentDTO.getScheduledDateTime()
-        );
+    public Appointment saveAppointment(AppointmentDTO dto) {
+        AppointmentType appointmentType = appointmentTypeRepository.findById(dto.getAppointmentType().getId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Tipo de atendimento não encontrado: " + dto.getAppointmentType().getId()));
 
-        // Atribuir posição na fila
-        appointment = queueService.assignQueuePosition(appointment);
+        User user = userRepository.findById(dto.getUser().getId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Usuário não encontrado: " + dto.getUserId()));
 
-        ServiceSchedule schedule = appointmentDTO.getAppointmentType().getServiceSchedule();
-        DayOfWeek selectedDay = appointment.getScheduledDateTime().getDayOfWeek();
+        Appointment appointment = new Appointment(appointmentType, user, dto.getScheduledDateTime());
 
-        if (!schedule.getDays().contains(selectedDay)) {
-            throw new InvalidDayException("O dia da semana selecionado não está disponível para agendamento.");
-        } else if (schedule.getDays() == null || schedule.getDays().isEmpty()) {
-            throw new InvalidDayException("O cronograma de serviço não possui dias disponíveis para agendamento.");
+        List<ServiceSchedule> schedules = appointmentType.getServiceSchedule();
+        if (schedules == null || schedules.isEmpty()) {
+            throw new InvalidDayException(
+                    "Não há horários disponíveis para o tipo de agendamento selecionado.");
         }
 
+        DayOfWeek selected = appointment.getScheduledDateTime().getDayOfWeek();
+        boolean ok = schedules.stream()
+                .anyMatch(s -> s.getDays().contains(selected.name()));
+
+        if (!ok) {
+            throw new InvalidDayException(
+                    "O dia selecionado não está disponível para o tipo de agendamento.");
+        }
+
+        appointment = queueService.assignQueuePosition(appointment);
         return appointmentRepository.save(appointment);
     }
 
@@ -104,7 +122,7 @@ public class AppointmentService {
         return appointmentRepository.findByUserId(userId);
     }
     
-    @Transactional//consertar isso daqui
+    @Transactional
     public Appointment updateAppointment(Long id, AppointmentDTO appointmentDto) {
         Optional<Appointment> optionalAppointment = appointmentRepository.findById(id);
 

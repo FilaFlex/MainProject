@@ -66,11 +66,7 @@ public class Appointment {
 
     //=================================Construtores======================================
 
-    // Getters e setters
-
-
     public Appointment() {
-    
     }
 
     public Appointment(AppointmentType appointmentType, User user, LocalDateTime scheduledDateTime) {

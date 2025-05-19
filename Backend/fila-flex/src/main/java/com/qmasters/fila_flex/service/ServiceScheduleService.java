@@ -22,6 +22,7 @@ public class ServiceScheduleService {
     @Transactional
     public ServiceSchedule saveServiceSchedule(ServiceScheduleDTO serviceScheduleDTO) {
         ServiceSchedule serviceSchedule = new ServiceSchedule(
+            serviceScheduleDTO.getAppointmentType(),
             serviceScheduleDTO.getDays()
         );
 
